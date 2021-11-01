@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>client.js - Documentation</title>
+    
+    
+    <meta property="og:title" content="title"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content=""/>
+    
+    <meta property="og:url" content=""/>
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-Functions-Automode.html">Functions~Automode</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-Functions-Automode.html#setInterval">setInterval</a></li><li data-type='method' style='display: none;'><a href="module-Functions-Automode.html#setTimeout">setTimeout</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-Functions.html">Functions</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-Functions.html#.autoInputSync">autoInputSync</a></li><li data-type='method' style='display: none;'><a href="module-Functions.html#.automaticDisplay">automaticDisplay</a></li><li data-type='method' style='display: none;'><a href="module-Functions.html#.manualDisplay">manualDisplay</a></li><li data-type='method' style='display: none;'><a href="module-Functions.html#.manualInputSync">manualInputSync</a></li><li data-type='method' style='display: none;'><a href="module-Functions.html#.RealTimeData">RealTimeData</a></li><li data-type='method' style='display: none;'><a href="module-Functions.html#.submittedAutoPressure">submittedAutoPressure</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#automode">automode</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">client.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+
+/**
+ * Object for controlling automode timers and timeouts.
+ * {@link linkki Automodeen}
+ */
+const automode = new Automode();
+
+/**
+ * When whole page is refreshed, checks what mode is on and sets corresponding
+ * mode elements visible.
+ */
+window.onload = function () {
+    var mode = document.getElementById("mode").value;
+    if (mode == 1) {
+        document.getElementById("flexSwitchCheckDefault").checked = true;
+        manualDisplay();
+        manualInputSync();
+        RealTimeData();
+    } else if (mode == 0) {
+        document.getElementById("flexSwitchCheckDefault").checked = false;
+        automaticDisplay();
+        autoInputSync();
+    }
+}
+
+var box = document.getElementById("flexSwitchCheckDefault");
+
+/**
+ * Function checks if switch is checked. If checked, hides automatic mode elements and
+ * sets manual mode elements visible. Uses RealTimeData() function to start polling
+ * real time pressure and fan speed.
+ * if switch not checked, sets automatic mode elements visible and hides manual mode elements.
+ */
+box.onchange = function () {
+    if (document.getElementById("flexSwitchCheckDefault").checked) {
+        document.querySelectorAll("[id='mode']")[0].value = document.querySelectorAll("[id='mode']")[1].value = 1;
+        document.getElementById("automatic_pressure_div").style.display = "none";
+        manualDisplay();
+        manualInputSync();
+        RealTimeData();
+    } else {
+        document.getElementById("nav-bar").className = "navbar bg-danger p-3 mb-4";
+        document.getElementById("mode_name").innerHTML = "Automatic mode";
+        document.getElementById("input_speed_div").style.display = "none";
+        document.getElementById("mode").value = 0;
+        automaticDisplay();
+        autoInputSync();
+    }
+};
+
+
+//--------------------------------------------------------------------//
+//--------------------------FUNCTIONS---------------------------------//
+/**
+ * @module Functions
+ */
+
+/**
+ * Function sets interval to poll current pressure and fan speed of the embedded device.
+ * Changes #pressure_div and #speed_div elements to current pressure and speed.
+ * @memberOf module:Functions
+ */
+function RealTimeData() {
+    setInterval(() => {
+        fetch('/pressureLvl')
+            .then(response => {
+                return response.text();
+            })
+            .then(data => {
+                var pressure = JSON.parse(data).pressure;
+                var speed = JSON.parse(data).speed;
+                document.getElementById("pressure_div").innerHTML = "Current pressure: " + pressure + "Pa";
+                document.getElementById("speed_div").innerHTML = "Current speed: " + speed + "%";
+            })
+    }, 2000);
+};
+
+/**
+ * Function turns manual mode HTML -elements visible and automatic mode elements hidden.
+ *  @memberOf module:Functions
+ */
+function manualDisplay() {
+    document.getElementById("nav-bar").className = "navbar bg-info  p-3 mb-4";
+    document.getElementById("mode_name").innerHTML = "Manual mode";
+    document.getElementById("input_speed_div").style.display = "block";
+    document.getElementById("automatic_pressure_div").style.display = "none";
+};
+
+/**
+ * Function synchronizes manual mode's input values. When slider input is moved, number input is changed to
+ * same value and vice versa.
+ *  @memberOf module:Functions
+ */
+function manualInputSync() {
+    let speedInput = document.getElementById("speed_value");
+    let sliderInput = document.getElementById("formControlRangeSpeed");
+    speedInput.addEventListener("input", () => {
+        sliderInput.value = speedInput.value;
+    })
+
+    sliderInput.oninput = function () {
+        speedInput.value = this.value;
+    }
+}
+
+/**
+ * Turns automatic mode elements visible.
+ * Function is activated when switch is pressed.
+ *  @memberOf module:Functions
+ */
+function automaticDisplay() {
+    document.getElementById("mode_name").innerHTML = "Automatic mode";
+    document.getElementById("automatic_pressure_div").style.display = "block";
+}
+
+/**
+ * Sets timers on using automode -object
+ * Function is activated when "submit" -button is pressed.
+ * @memberOf module:Functions
+ */
+function submittedAutoPressure() {
+    automode.setInterval(document.getElementById("wantedPressure").value);
+    automode.setTimeout();
+}
+
+/**
+ * Function synchronizes automatic mode's input values. When slider input is moved, number input is changed to
+ * same value and vice versa.
+ *  @memberOf module:Functions
+ */
+function autoInputSync() {
+    let numberInput = document.getElementById("wantedPressure");
+    let sliderInput = document.getElementById("formControlRange");
+    document.getElementById("submitAuto").addEventListener("click", submittedAutoPressure);
+    numberInput.addEventListener("input", () => {
+        sliderInput.value = numberInput.value;
+    })
+
+    sliderInput.oninput = function () {
+        numberInput.value = this.value;
+    }
+}
+
+
+//--------------------------------------------------------------------//
+//---------------------------CLASSES----------------------------------//
+/**
+ * Controls the timers and timeouts for the automatic mode. If pressure is not settled to wanted pressure
+ * within 10 seconds, creates an "alert"-popup for user.
+ * @constructor Automode
+ */
+function Automode() {
+    let timeout;
+    let interval;
+
+    /**
+     * Function sets timeout. If timeout not cleared in reasonable time, alert pops up.
+     */
+    this.setTimeout = function () {
+        timeout = setTimeout(function () {
+            alert("Couldn't settle the pressure in reasonable time!");
+        }, 100000);
+    };
+
+    /**
+     *  Function sends wanted pressure value to server. Function also starts an interval to poll current pressure.
+     *  If current pressure settles to wanted pressure, clears timeout and interval.
+     * @param wantedPressure {integer} pressure value what user set on automatic mode.
+     */
+    this.setInterval = function (wantedPressure) {
+        clearTimeout(timeout);
+        clearInterval(interval);
+        interval = setInterval(() => {
+            fetch('/pressureLvl')
+                .then(response => {
+                    return response.text();
+                })
+                .then(data => {
+                    let pressure = JSON.parse(data).pressure;
+                    if (pressure == wantedPressure) {
+                        alert("pressure settled!");
+                        clearTimeout(timeout);
+                        clearInterval(interval);
+                    }
+                })
+        }, 2000);
+    };
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Mon Oct 25 2021 17:00:37 GMT+0300 (Itä-Euroopan kesäaika) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
