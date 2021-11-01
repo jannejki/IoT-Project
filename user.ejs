@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <script type="text/javascript" async src="/client.js"></script>
+    <title>Fan</title>
+</head>
+<body>
+    <header>
+        <nav  id="nav-bar" class="navbar bg-secondary p-3 mb-4">
+            <a class="text-white text-decoration-none " href="/"><h1>ABB Ventilation Controller</h1></a>
+        </nav>
+    </header>
+
+    <!-- form to choose which account activity to see -->
+	<div style="float:left; padding-left:5em;">
+		<form method="post" action="/users">
+			<label for="users"> Account activities of </label>
+			<select name="users" id="users">
+				<option> all users </option>
+				<option> chloe </option>
+				<option> janne </option>
+				<option> madeline </option>
+				<option> teacher </option>
+			</select>
+			<input type="submit" value="See">
+		</form>
+		<%-frequencies%>	<!-- place where the frequence of connection of the users will be print -->
+		<br>
+		<%-logs%>			<!-- place where the log connections of the users will be print -->
+	</div>
+
+    <footer class="bg-light text-center text-lg-start">
+		<div class="d-flex justify-content-center text-center text-white fixed-bottom" style="background-color: rgba(0, 0, 0, 0.2)">
+			<!-- form to send an unauthorized status from the server side -->
+			<form method="get" action="/logout" class="m-2">
+				<input type="submit" value="Log Out" style="background-color: rgba(0, 0, 0, 0.2); border: none;">
+			</form>
+			-
+			<a class="text-black text-decoration-none m-2" href="/users">User logs</a>
+		</div>
+	</footer>
+</body>

@@ -1,0 +1,145 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <script type="text/javascript" async src="/client.js"></script>
+    <title>Fan</title>
+</head>
+<body>
+<header>
+    <nav id="nav-bar" class="navbar bg-danger p-3 mb-4">
+        <!--nav bar stay the same on each page; color change on mode : red=auto, blue=manual, grey=user-->
+        <div class="container-fluid text-white">
+            <a class="text-white text-decoration-none " href="/"><h1>ABB Ventilation Controller</h1></a>
+            <a id="mode_display" class="d-flex justify-content-end text-white text-decoration-none fs-5 p-1">
+                <div id="mode_name" class="mx-4">
+                    Automatic mode
+                </div>
+                <div class="form-check form-switch" id="switch">
+                    <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+                </div>
+            </a>
+        </div>
+    </nav>
+</header>
+
+<!-- form to choose on which period of time to see the sensor data and fan activies -->
+<div style="float:right; padding-right:5em;">
+    <h4>Graph data</h4>
+    <canvas id="myChart" style="width:100%;max-width:700px;margin-bottom:20px"></canvas>
+    <!-- declare the place where the chart will be put -->
+    <form method="post" action="/datas">
+        <input type="number" id="mode" name="mode" style="display: none" value="<%=mode%>">
+        <label for="datas"> Sensor data and Fan activites </label>
+        <select name="datas" id="datas">
+            <option> All</option>
+            <option> From last week</option>
+            <option> From 5d ago</option>
+            <option> From 3d ago</option>
+            <option> From yesterday</option>
+            <option> Last 10h</option>
+            <option> Last 5h</option>
+            <option> Last hour</option>
+            <option> Last 30min</option>
+            <option> Last 15min</option>
+        </select>
+        <input type="submit" value="See">
+    </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<!-- define the cdn of Chart.js used for the chart -->
+<%-datas%>    <!-- place where the html code will be put to create the chart -->
+
+<!--Display real time data and speed post form visible only in manual mode-->
+<div id="input_speed_div" style="display: none; float:left; padding-left:5em;">
+    <h4 class="pt-1">Manual speed settings</h4>
+
+    <div class="w-100">
+        <label for="formControlRangeSpeed">Set speed value:</label><br>
+        <input type="range" class="w-100" id="formControlRangeSpeed" min="0" max="100" list="tickmarks">
+
+        <datalist id="tickmarks" style="display:flex">
+            <option class="ml-0 px-0" value="0" label="0" style="font-size: 13px">0 %</option>
+            <option class="px-0" value="10"></option>
+            <option class="px-0" value="20"></option>
+            <option class="px-0" value="30"></option>
+            <option class="px-0" value="40"></option>
+            <option class="mx-auto px-0" value="50" label="50" style="font-size: 13px">50 %</option>
+            <option class="px-0" value="60"></option>
+            <option class="px-0" value="70"></option>
+            <option class="px-0" value="80"></option>
+            <option class="px-0" value="90"></option>
+            <option class="mr-0 px-0" value="100" label="100" style="font-size: 13px">100 %</option>
+        </datalist>
+
+    </div>
+
+    <form id="speed" class="d-flex pt-1" action="/speed" method="post">
+        <label for="speed">Or by :</label>
+
+        <div id="inputspeed" style="margin-left:auto">
+            <input type="number" class="pl-1" name="speed_value" id="speed_value" min="0" max="100" size="10" value="50"
+                   style="font-size: 13px">
+            <!--this input is just to send the mode to the server in case the page is reload-->
+            <input type="number" id="mode" name="mode" style="display: none" value="<%=mode%>">
+            <input type="submit" id="submitSpeed" value="Submit" style="font-size: 13px">
+        </div>
+    </form>
+
+    <div id="Realtime" class="pt-1">
+        <h4 class="pt-1">Real time data</h4>
+        <div id="speed_div">Charging speed...</div>
+        <div id="pressure_div">Charging pressure...</div>
+    </div>
+</div>
+
+<!-- Automatic mode elements -->
+<div id="automatic_pressure_div" style="display: block; float:left; padding-left:5em;">
+    <h4 class="pt-1">Automatic pressure settings</h4>
+    <label for="formControlRange">Set pressure value:</label><br>
+    <input type="range" class="w-100" id="formControlRange" min="0" max="120" list="tickmarks">
+
+    <datalist id="tickmarks" style="display:flex">
+        <option class="ml-0 px-0" value="0" label="0" style="font-size: 13px">0 Pa</option>
+        <option class="px-0" value="10"></option>
+        <option class="px-0" value="20"></option>
+        <option class="px-0" value="30"></option>
+        <option class="px-0" value="40"></option>
+        <option class="px-0" value="50"></option>
+        <option class="mx-auto px-0" value="60" label="60" style="font-size: 13px">60 Pa</option>
+        <option class="px-0" value="70"></option>
+        <option class="px-0" value="80"></option>
+        <option class="px-0" value="90"></option>
+        <option class="px-0" value="100"></option>
+        <option class="px-0" value="110"></option>
+        <option class="mr-0 px-0" value="120" label="120" style="font-size: 13px">120 Pa</option>
+    </datalist>
+
+    <form id="automaticPressure" method="POST" action="/autoMode" class="d-flex pt-1">
+        <label for="wantedPressure">Or by :</label>
+        <div id="input" style="margin-left:auto">
+            <input type="number" class="pl-3" name="wantedPressure" id="wantedPressure" value="60" min="0" max="120"
+                   size="10" style="font-size: 13px" placeholder="Pa">
+            <input type="number" id="mode" name="mode" style="display: none" value="0">
+            <input type="submit" value="Submit" id="submitAuto" style="font-size: 13px">
+        </div>
+    </form>
+</div>
+
+<!--footter containing the link to log out and to go to the user stats page-->
+<footer class="bg-light text-center text-lg-start">
+    <div class="d-flex justify-content-center text-center text-white fixed-bottom"
+         style="background-color: rgba(0, 0, 0, 0.2)">
+        <!-- form to send an unauthorized status from the server side -->
+        <form method="get" action="/logout" class="m-2">
+            <input type="submit" value="Log Out" style="background-color: rgba(0, 0, 0, 0.2); border: none;">
+        </form>
+        -
+        <a class="text-black text-decoration-none m-2" href="/users">User logs</a>
+    </div>
+</footer>
+</body>
+</html>
